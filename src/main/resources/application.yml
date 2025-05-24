@@ -10,18 +10,25 @@ spring:
   datasource:
     url: jdbc:h2:mem:testdb
     driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    username: root
+    password: 123456
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      # 开启远程访问
+      settings:
+        web-allow-others: true
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
   async:
-    enabled: true
+    enabled: false
 
 file:
   sftp:
-    host: 192.168.8.22
+    host: 192.168.8.11
     port: 22
     username: root # 替换为虚拟机的 SSH 用户名
     password: 123456 # 替换为虚拟机的 SSH 密码

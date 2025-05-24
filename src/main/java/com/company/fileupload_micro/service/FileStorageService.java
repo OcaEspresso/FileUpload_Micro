@@ -10,6 +10,6 @@ import org.springframework.web.multipart.MultipartFile;
  * */
 public interface FileStorageService {
 
-    FileMetadata uploadFile(MultipartFile file) throws JSchException, SftpException;
+    FileMetadata storeFile(MultipartFile file) throws JSchException, SftpException;
 
 }

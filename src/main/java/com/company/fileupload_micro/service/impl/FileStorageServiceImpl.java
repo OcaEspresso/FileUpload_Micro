@@ -2,6 +2,7 @@ package com.company.fileupload_micro.service.impl;
 
 import com.company.fileupload_micro.config.FileStorageConfig;
 import com.company.fileupload_micro.dto.FileMetadata;
+import com.company.fileupload_micro.entity.FileMetadataEntity;
 import com.company.fileupload_micro.exception.FileStorageException;
 import com.company.fileupload_micro.repository.FileMetadataRepository;
 import com.company.fileupload_micro.service.FileStorageService;
@@ -13,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -21,20 +23,20 @@ import java.util.UUID;
  * @create: 2025年-05月-24日--16:30
  */
 @Service
-public class SftpFileStorageServiceImpl implements FileStorageService{
+public class FileStorageServiceImpl implements FileStorageService{
 
-    private static final Logger logger = LoggerFactory.getLogger(SftpFileStorageServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(FileStorageServiceImpl.class);
     private final FileStorageConfig fileStorageConfig;
     private final FileMetadataRepository fileMetadataRepository;
 
     // 构造初始化
-    public SftpFileStorageServiceImpl(FileStorageConfig fileStorageConfig, FileMetadataRepository fileMetadataRepository) {
+    public FileStorageServiceImpl(FileStorageConfig fileStorageConfig, FileMetadataRepository fileMetadataRepository) {
         this.fileStorageConfig = fileStorageConfig;
         this.fileMetadataRepository = fileMetadataRepository;
     }
 
     @Override
-    public FileMetadata uploadFile(MultipartFile file) {
+    public FileMetadata storeFile(MultipartFile file) {
 
         logger.info("Starting file upload: {}", file.getOriginalFilename());
 
@@ -104,6 +106,38 @@ public class SftpFileStorageServiceImpl implements FileStorageService{
         }
 
         // 保存元数据到H2
+        FileMetadataEntity fileEntity = new FileMetadataEntity();
+        fileEntity.setFileName(fileName);
+        fileEntity.setOriginalFileName(originalFileName);
+        fileEntity.setFileType(contentType);
+        fileEntity.setFileSize(file.getSize());
+        fileEntity.setStoragePath(remotePath);
+        fileEntity.setUploadTime(LocalDateTime.now());
+        fileMetadataRepository.save(fileEntity);
+
+        // 返回 DTO
+        FileMetadata metadata = new FileMetadata();
+        metadata.setId(fileEntity.getId());
+        metadata.setFileName(fileName);
+        metadata.setOriginalFileName(originalFileName);
+        metadata.setFileType(contentType);
+        metadata.setFileSize(file.getSize());
+        metadata.setStoragePath(remotePath);
+        metadata.setUploadTime(fileEntity.getUploadTime());
+
+        return metadata;
 
     }
+
+    /**
+     *  获取文件扩展名
+     * **/
+    private String getFileExtension(String fileName) {
+        if (fileName == null || !fileName.contains(".")) {
+            return "";
+        }
+
+        return fileName.substring(fileName.lastIndexOf(".") + 1);
+    }
+
 }
